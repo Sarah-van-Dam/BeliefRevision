@@ -8,16 +8,16 @@ namespace BeliefRevision
 {
     public class BeliefRevision
     {
-        private List<string> _clauses;
-        private string _sentence;
+        public List<string> _clauses;
+        public string _sentence;
 
         // --------------------------------------------------------------------------------------------
-        public bool ValidateInput(string[] args)
+        public bool ValidateInput(string[] clauses, string sentence)
         {
             // Pattern for a list of Horn-clauses
             string pattern = @"^([!]?[a-z]{1})([|][!]?[a-z]{1})+$";
 
-            _sentence = args[1];
+            _sentence = sentence;
             //_sentence = "p|!q";
 
             // Validate the file and sentence
@@ -26,9 +26,7 @@ namespace BeliefRevision
             //    Console.WriteLine("Input too short");
             //    return false;
             //}
-
-            // Read all Horn-clauses
-            string[] clauses = File.ReadAllLines(args[0]);
+            
             //string[] clauses = new string[] { "!p | q", "p | !q" };
             _clauses = new List<string>(clauses);
             for (var i = 0; i < _clauses.Count; i++)
@@ -71,7 +69,7 @@ namespace BeliefRevision
         public bool Resolution()
         {
             // Create the set of clauses on which to do resolution.
-            List<string> rsClauses = _clauses;
+            List<string> rsClauses = new List<string>(_clauses);
 
             // Negate the sentence and add the resulting clauses to the resolution clauses.
             string[] rsSentence = _sentence.Split('|');
@@ -95,7 +93,7 @@ namespace BeliefRevision
             {
                 for (int i = 0; i < rsClauses.Count; i++)
                 {
-                    for (int j = i+1; j < rsClauses.Count; j++)
+                    for (int j = i + 1; j < rsClauses.Count; j++)
                     {
                         string resolvents = Resolve(rsClauses[i], rsClauses[j]);
                         if (resolvents.Equals(""))
@@ -140,15 +138,15 @@ namespace BeliefRevision
 
             // Return the literals left
             string newClause = "";
-            if(symClause1.Count > 0)
+            if (symClause1.Count > 0)
             {
                 foreach (string clause in symClause1)
                 {
-                    if(newClause.Equals(""))
+                    if (newClause.Equals(""))
                         newClause += clause;
                     else
-                        if(!newClause.Contains(clause))
-                            newClause += "|" + clause;
+                        if (!newClause.Contains(clause))
+                        newClause += "|" + clause;
                 }
             }
             if (symClause2.Count > 0)
@@ -167,7 +165,7 @@ namespace BeliefRevision
 
         private string GetNegated(string v1)
         {
-            if (v1.Contains('!'))
+            if (v1.StartsWith('!'))
             {
                 v1 = v1.Replace("!", "");
             }
@@ -176,6 +174,107 @@ namespace BeliefRevision
                 v1 = "!" + v1;
             }
             return v1;
+        }
+
+        //////////////////////////////////////////////////////
+        ///                                                ///
+        ///            This is our town, scrub!            ///
+        ///                                                /// 
+        //////////////////////////////////////////////////////
+
+        public void Expansion(string sentence)
+        {
+            if (!(_clauses.Contains(sentence)))
+            {
+                _clauses.Add(sentence);
+            }
+
+        }
+
+        public HashSet<List<string>> Contraction(string sentence)
+        {
+            // Find maximal subsets that does not imply the sentence
+            HashSet<List<string>> maximalSubsets = new HashSet<List<String>>();
+
+            if (sentence.StartsWith("!"))
+            {
+                // A & B must be true
+                sentence = sentence.Substring(1);
+                maximalSubsets = ContractionHornAnd(_clauses, sentence);
+            }
+            else
+            {
+                // A & ~B must be true
+                maximalSubsets = ContractionHornOr(_clauses, sentence);
+            }
+
+            return maximalSubsets;
+
+        }
+
+        private HashSet<List<string>> ContractionHornOr(List<string> rsClauses, string sentence)
+        {
+            List<string> symClause1 = new List<string>();
+
+            List<string> symClause2 = new List<string>(sentence.Split('|'));
+
+            HashSet<List<string>> maximalSubsets = new HashSet<List<String>>
+            {
+                rsClauses
+            };
+
+            for (int i = 0; i < rsClauses.Count; i++)
+            {
+                symClause1 = rsClauses.ElementAt(i).Split('|').ToList();
+
+                foreach (string literal in symClause1)
+                {
+                    if (symClause2.Contains(literal)) // remove opposite literals
+                    {
+                        maximalSubsets.First().Remove(rsClauses[i]);
+                        break;
+
+                    }
+                }
+            }
+            return maximalSubsets;
+
+        }
+
+        private HashSet<List<string>> ContractionHornAnd(List<string> rsClauses, string sentence)
+        {
+
+            List<string> symClause1 = new List<string>();
+
+            List<string> symClause2 = new List<string>(sentence.Split('|'));
+
+            HashSet<List<string>> maximalSubsets = new HashSet<List<String>>
+            {
+                rsClauses
+            };
+
+            for (int i = 0; i < rsClauses.Count; i++)
+            {
+                symClause1 = rsClauses.ElementAt(i).Split('|').ToList();
+                
+                bool isNegatedClause = symClause1.All(literal => symClause2.Contains(GetNegated(literal)));
+                
+                if (isNegatedClause)
+                {
+                    maximalSubsets.First().Remove(rsClauses[i]);
+                }
+            }
+            return maximalSubsets;
+
+        }
+
+        public void Revision(string sentence)
+        {
+            // Levi identity
+            // A * p = (A - !p) + p
+            HashSet<List<string>> maximalSubset = Contraction(GetNegated(sentence));
+            _clauses = maximalSubset.First(); // Specifically for Horn-clauses, there is only one subset
+            Expansion(sentence);
         }
     }
 }
