@@ -100,7 +100,8 @@ namespace BeliefRevision
                         string resolvents = Resolve(rsClauses[i], rsClauses[j]);
                         if (resolvents.Equals(""))
                             return true;
-                        newClauses.Add(resolvents);
+                        if(!resolvents.Equals("-1"))
+                            newClauses.Add(resolvents);
                     }
                 }
                 var count = 0;
@@ -137,6 +138,10 @@ namespace BeliefRevision
                 symClause1.Remove(literal);
                 symClause2.Remove(GetNegated(literal));
             }
+
+            if (literalsToRemove.Count == 0)
+                return "-1"; // If there is not a common opposite literal return.
+
 
             // Return the literals left
             string newClause = "";
