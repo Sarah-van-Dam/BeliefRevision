@@ -201,6 +201,9 @@ namespace BeliefRevision
             // Find maximal subsets that does not imply the sentence
             HashSet<List<string>> maximalSubsets = new HashSet<List<String>>();
 
+            maximalSubsets = ContractionHornAnd(_clauses, sentence);
+
+            /*
             if (sentence.StartsWith("!"))
             {
                 // A & B must be true
@@ -211,7 +214,7 @@ namespace BeliefRevision
             {
                 // A & ~B must be true
                 maximalSubsets = ContractionHornOr(_clauses, sentence);
-            }
+            }*/
 
             return maximalSubsets;
 
@@ -277,7 +280,7 @@ namespace BeliefRevision
         {
             // Levi identity
             // A * p = (A - !p) + p
-            HashSet<List<string>> maximalSubset = Contraction(GetNegated(sentence));
+            HashSet<List<string>> maximalSubset = Contraction(sentence);
             _clauses = maximalSubset.First(); // Specifically for Horn-clauses, there is only one subset
             Expansion(sentence);
         }
