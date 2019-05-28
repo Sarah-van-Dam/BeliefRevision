@@ -21,11 +21,11 @@ namespace BeliefRevision
             //_sentence = "p|!q";
 
             // Validate the file and sentence
-            //if (args.Length < 2)
-            //{
-            //    Console.WriteLine("Input too short");
-            //    return false;
-            //}
+            if (args.Length < 2)
+            {
+                Console.WriteLine("Input too short");
+                return false;
+            }
             
             //string[] clauses = new string[] { "!p | q", "p | !q" };
             _clauses = new List<string>(clauses);
@@ -103,7 +103,7 @@ namespace BeliefRevision
                     }
                 }
                 var count = 0;
-                foreach (var clause in newClauses)
+                foreach (var clause in newClauses)  
                 {
                     if (rsClauses.Contains(clause))
                         count++;
