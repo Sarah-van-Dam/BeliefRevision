@@ -66,13 +66,13 @@ namespace BeliefRevision
             return true;
         }
 
-        public bool Resolution()
+        public bool Resolution(List<string> clauses, string sentence)
         {
             // Create the set of clauses on which to do resolution.
-            List<string> rsClauses = new List<string>(_clauses);
+            List<string> rsClauses = new List<string>(clauses);
 
             // Negate the sentence and add the resulting clauses to the resolution clauses.
-            string[] rsSentence = _sentence.Split('|');
+            string[] rsSentence = sentence.Split('|');
             for (int i = 0; i < rsSentence.Length; i++)
             {
                 if (rsSentence[i].Contains('!'))

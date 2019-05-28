@@ -8,11 +8,15 @@ namespace BeliefRevision
 
         static void Main(string[] args)
         {
-
-            var path = @"..\..\..\test1.txt";
-
+            // Load the belief base
+            Console.WriteLine("Please enter the name of the file containing the Belief Base. Example: test1");
+            string fileName = Console.ReadLine();
+            var path = @"..\..\..\BeliefBases\"+fileName+".txt";
             string[] hornClauses = System.IO.File.ReadAllLines(path);
-            string sentence = "q | !r";
+
+            // Input the sentence to compare against
+            Console.WriteLine("Please enter the sentence to compare against. Example: q | !r");
+            string sentence = Console.ReadLine();
 
             // Validate the input: file and consol input
             if (!_beliefRevision.ValidateInput(hornClauses, sentence))
@@ -20,24 +24,27 @@ namespace BeliefRevision
                 Console.WriteLine("");
             }
 
-            Console.WriteLine("The KB before resolution:");
+            Console.WriteLine("\nThe KB before resolution:");
             _beliefRevision._clauses.ForEach(clause => Console.WriteLine(clause));
 
+            string validatedSentence = _beliefRevision._sentence;
+
             // Do resolution 
-            if (_beliefRevision.Resolution())
+            if (_beliefRevision.Resolution(_beliefRevision._clauses, validatedSentence))
             {
-                Console.WriteLine("The sentence {0} is logical entailed in the knowledge base. Performing expansion.", sentence);
-                _beliefRevision.Expansion(_beliefRevision._sentence);
+                Console.WriteLine("\nThe sentence {0} is logical entailed in the knowledge base! Performing expansion...", validatedSentence);
+                _beliefRevision.Expansion(validatedSentence);
             }
             else
             {
-                Console.WriteLine("The sentence {0} is not logical entailed in the knowledge base. Performing revision.", sentence);
-                _beliefRevision.Revision(_beliefRevision._sentence);
+                Console.WriteLine("\nThe sentence {0} is not logical entailed in the knowledge base! Performing revision...", validatedSentence);
+                _beliefRevision.Revision(validatedSentence);
             }
 
-            Console.WriteLine("The updated KB:");
+            Console.WriteLine("\nThe updated KB:");
             _beliefRevision._clauses.ForEach(clause => Console.WriteLine(clause));
 
+            Console.WriteLine("\nPress the Enter key to exit program...");
             Console.ReadLine();
         }
 	}
