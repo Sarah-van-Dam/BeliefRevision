@@ -19,13 +19,6 @@ namespace BeliefRevision
 
             _sentence = sentence;
             //_sentence = "p|!q";
-
-            // Validate the file and sentence
-            if (args.Length < 2)
-            {
-                Console.WriteLine("Input too short");
-                return false;
-            }
             
             //string[] clauses = new string[] { "!p | q", "p | !q" };
             _clauses = new List<string>(clauses);
